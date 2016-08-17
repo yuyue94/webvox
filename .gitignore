@@ -35,4 +35,3 @@ node_modules
 *.map
 .DS_Store
 build/CNAME
-index.html

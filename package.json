@@ -25,6 +25,7 @@
     "fluent-ffmpeg": "^2.1.0",
     "font-awesome": "^4.6.3",
     "less": "^2.7.1",
+    "less-loader": "^2.2.3",
     "musicmetadata": "^2.0.4",
     "node-ffprobe": "^1.2.2",
     "postcss-loader": "^0.10.0",
