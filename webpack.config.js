@@ -31,6 +31,10 @@ module.exports = {
         {
             test: /\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/,
             loader: 'url-loader?limit=50000&name=[path][name].[ext]'
+        },
+        {
+            test: /\.mp3$/,
+            loader: 'file-loader?name=[path][name].[ext]'
         }
 
         ]

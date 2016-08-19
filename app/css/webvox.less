@@ -1,4 +1,11 @@
 @base-color: #282828;
+@light-gray: #ababab;
+
+body {
+	background-image: url('../images/background.jpg');
+	height: 100%;
+	background-size: cover;
+}
 
 .one-line() {
 	white-space: nowrap;
@@ -6,73 +13,157 @@
 	overflow: hidden;
 }
 
+ul {
+	margin: 0;
+	padding: 0;
+	li {
+		list-style-type: none;
+	}
+}
+
 .webVox {
 	width: 325px;
-	height: 575px;
-	background-color: @base-color;
-	border-radius: 10px;
+	margin-top: 50px;
+	margin-left: 50px;	
 	position: relative;
 	#close {
 		position: absolute;
+		font-size: 12px;
 		left: 5px;
 		top: 5px;
 		color: #3c3c3c;	
 	}
-	.playBox {
-		padding: 10px;
-		padding-top: 20px;
-		background: linear-gradient(90deg, #4c4c4c 0%, #363636 100%); 
+	.voxHeader {
+		background: linear-gradient(180deg, #4c4c4c 0%, #363636 100%); 
 		border-top-left-radius: 10px;
 		border-top-right-radius: 10px;
-		.sampleInfo {
+		.info {
+			padding: 10px;
+			padding-top: 20px;
+			.sampleInfo {
+				ul {
+					li {
+						display: inline-block;
+						color: @light-gray;
+						padding: 0 5px;
+						font-size: 12px;
+						border-left: 1px solid #333;
+						&:first-child {
+							border-left-width: 0px;
+							padding-left: 0px;
+						}
+					}
+				}
+			}
+			.basicInfo {
+				p {
+					color: @light-gray;
+					font-size: 14px;
+					margin-bottom: 3px;
+					&.album {
+						display: none;
+					}
+					&.title {
+						font-size: 16px;
+						color: white;
+						margin-top: 0px;
+						.one-line;
+					}
+
+				}
+			}
+		}
+		.playBox {
+			.progressBar {
+				height: 1px;
+				padding: 6px 0px;
+				&:hover {
+					.played::after {
+						content: '';
+						width: 2px;
+						height: 9px;
+						background-color: #E48230;
+						position: absolute;
+						right: 0px;
+						top: -4px;
+					}
+				}
+				.total {
+					width: 100%;
+					background-color: #202020;
+					float: left;	
+					height: 1px;
+				}
+				.played {
+					position: relative;
+					width: 20%;
+					background-color: #E48230;
+					float: left;
+					height: 1px;
+					top: -1px;  /* hide the total bar */
+				}
+			}
 			ul {
-				margin: 0px;
-				padding: 0px;
+				width: 100%;
+				color: white;
+				padding: 10px 0;
 				li {
 					display: inline-block;
-					color: #ababab;
-					padding: 0 5px;
-					font-size: 12px;
+					text-align: center;
 					border-left: 1px solid #333;
+					i {
+						cursor: pointer;
+					}
 					&:first-child {
 						border-left-width: 0px;
-						padding-left: 0px;
+					}
+					&.toggle, &.search {
+						width: 19.5%;
+					}
+					&.controls {
+						width: 60%;
+						i {
+							margin: 0 20px;
+						}
 					}
 				}
 			}
 		}
-		.basicInfo {
-			p {
-				color: #c0c0c0;
-				font-size: 14px;
-				margin-bottom: 3px;
-				&.album {
-					display: none;
-				}
-				&.title {
-					font-size: 16px;
-					color: white;
-					margin-top: 0px;
-					.one-line;
-				}
-
-			}
-		}
 	}
 	.playList {
-		margin: 0px;
-		padding: 0px;
+		height: 450px;
+		background-color: @base-color;
+		border-bottom-left-radius: 10px;
+		border-bottom-right-radius: 10px;
 		li {
 			font-size: 12px;
 			height: 40px;
-			color: #ababab;
+			color: @light-gray;
 			position: relative;
+			cursor: default;
+			&:hover {
+				background-color: #333;
+				.songInfo {
+					box-shadow: none;
+				}
+			}
+			&.active {
+				background-color: white;
+				.songInfo {
+					box-shadow: none;
+					.title {
+						color: black;
+					}
+				}	
+			}
 			.index {
 				width: 40px;
 				text-align: center;
 				position: absolute;
 				left: 0px;
 				top: 50%;
+				-moz-transform: translateY(-50%);
+				-webkit-transform: translateY(-50%);	
 				transform: translateY(-50%);
 			}
 			.songInfo {
@@ -80,11 +171,15 @@
 				height: 100%;
 				position: absolute;
 				left: 40px;
-				border-bottom: 1px solid rgba(255,255,255,0.2);
+				-moz-box-shadow: inset 0 -10px 0 -9px rgba(255,255,255,0.1);
+				-webkit-box-shadow: inset 0 -10px 0 -9px rgba(255,255,255,0.1);
+				box-shadow: inset 0 -10px 0 -9px rgba(255,255,255,0.1);
 				span {
 					display: inline-block;
 					position: relative;
 					top: 50%;
+					-moz-transform: translateY(-50%);
+					-webkit-transform: translateY(-50%);	
 					transform: translateY(-50%);
 					float: left;
 				}
@@ -92,6 +187,10 @@
 					color: white;
 					margin-right: 5px;
 					max-width: 160px;
+					.one-line;
+				}
+				.artists {
+					max-width: 75px;
 					.one-line;
 				}
 				.duration {

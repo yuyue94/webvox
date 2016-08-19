@@ -29,6 +29,7 @@
     "musicmetadata": "^2.0.4",
     "node-ffprobe": "^1.2.2",
     "postcss-loader": "^0.10.0",
+    "soundmanager2": "^2.97.20150601",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1"
