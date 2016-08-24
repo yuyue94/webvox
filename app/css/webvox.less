@@ -1,5 +1,6 @@
 @base-color: #282828;
 @light-gray: #ababab;
+@vox-orange: #e48230;
 
 body {
 	background-image: url('../images/background.jpg');
@@ -63,11 +64,21 @@ ul {
 					&.album {
 						display: none;
 					}
+				}
+				span {
+					display: inline-block;	
 					&.title {
+						width: 80%;
 						font-size: 16px;
 						color: white;
 						margin-top: 0px;
 						.one-line;
+					}
+					&.remainTime {
+						color: white;
+						text-align: right;
+						width: 20%;
+						font-size: 12px;
 					}
 
 				}
@@ -77,17 +88,6 @@ ul {
 			.progressBar {
 				height: 1px;
 				padding: 6px 0px;
-				&:hover {
-					.played::after {
-						content: '';
-						width: 2px;
-						height: 9px;
-						background-color: #E48230;
-						position: absolute;
-						right: 0px;
-						top: -4px;
-					}
-				}
 				.total {
 					width: 100%;
 					background-color: #202020;
@@ -96,11 +96,19 @@ ul {
 				}
 				.played {
 					position: relative;
-					width: 20%;
-					background-color: #E48230;
+					background-color: @vox-orange;
 					float: left;
 					height: 1px;
 					top: -1px;  /* hide the total bar */
+					.stick {
+						display: none;
+						width: 2px;
+						height: 9px;
+						position: absolute;		
+						right: 0px;
+						top: -4px;
+						background-color: @vox-orange;
+					}
 				}
 			}
 			ul {

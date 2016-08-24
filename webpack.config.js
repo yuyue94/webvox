@@ -33,10 +33,9 @@ module.exports = {
             loader: 'url-loader?limit=50000&name=[path][name].[ext]'
         },
         {
-            test: /\.mp3$/,
-            loader: 'file-loader?name=[path][name].[ext]'
+            test: /\.(wav|mp3)?$/,
+            loader: 'file-loader'
         }
-
         ]
     }
 };
