@@ -14,5 +14,16 @@ module.exports = {
 		(minutes < 10 ? '0' : '') + minutes + ':' +
 		(seconds < 10 ? '0' : '') + seconds
 		// + ':' + (milliseconds < 100 ? '0' : '') + (milliseconds < 10 ? '0' : '') + milliseconds;	
+	},
+	clearSelection: function(){
+		if (window.getSelection) {
+			if (window.getSelection().empty) {  // Chrome
+				window.getSelection().empty();
+			} else if (window.getSelection().removeAllRanges) {  // Firefox
+				window.getSelection().removeAllRanges();
+			}
+		} else if (document.selection) {  // IE?
+			document.selection.empty();
+		}	
 	}
 }

@@ -43,19 +43,26 @@ require('font-awesome/css/font-awesome.css');
 
 // Question: 当url为'../audio/11.mp3'时，作为参数传入require中（动态加载模块）报错，但为'./11.mp3'不报错，直接传路径不报错（静态加载），
 // 只将后面name作为参数时，两个点的也不报错
+
+
+/* 领悟：
+	1. 所有和state有关的事物我们重新render就是了，而且只关心和这个state有关的DOM，不用手动改class
+	2. 子元素要改父元素的state目前只能通过回调函数，然后父元素setState后，子元素相关DOM会重刷，一来一回
+*/
 var WebVox = React.createClass({
 	getInitialState: function(){
 		return {
 			currentSongId: 1,
-			isPlaying: false
+			isPlaying: false,
+			isPlayFromBegin: true
 		}
 	},
 	handleSwitchSong: function(id){
-		this.setState({currentSongId: parseInt(id), isPlaying: true});
+		this.setState({currentSongId: parseInt(id), isPlaying: true, isPlayFromBegin: true});
 	},
 	togglePlayingState: function(){
 		var isPlaying = this.state.isPlaying ? false : true;
-		this.setState({isPlaying: isPlaying});
+		this.setState({isPlaying: isPlaying, isPlayFromBegin: false});
 	},
 	render: function(){
 		var currentSongId = this.state.currentSongId;
@@ -63,8 +70,8 @@ var WebVox = React.createClass({
 		return (
 			<div className="webVox">
 				<div id="close"><i className="fa fa-times"></i></div>
-				<VoxHeader song={currentSong} isPlaying={this.state.isPlaying} togglePlayingState={this.togglePlayingState}/>
-				<PlayList currentSongId={this.state.currentSongId} songs={this.props.data} isPlaying={this.state.isPlaying} handleSwitchSong={this.handleSwitchSong}/>
+				<VoxHeader song={currentSong} togglePlayingState={this.togglePlayingState} {...this.state} />
+				<PlayList songs={this.props.data} handleSwitchSong={this.handleSwitchSong} {...this.state} />
 			</div>
 		)
 	}
@@ -78,22 +85,17 @@ var VoxHeader = React.createClass({
 		}
 	},
 	componentWillMount: function(){
+		// 其实不用在这里设置audio，这里一个audio可以看成一个音频输出口，可以使用soundManager通过id来获取
 		var that = this;
-		var song = this.props.song;
-		var audioUrl = require('../audio/'+song.name);
-		this.audio = soundManager.createSound({
-			id: 'audio',
-			url: audioUrl,
-			whileloading: function(){
-				console.log(VoxUtil.formatMilliseconds(this.durationEstimate));
-			},
-			whileplaying: function() {
-				that.setState({currentTime: this.position});
-			},
-			onload: function(){
-				console.log(VoxUtil.formatMilliseconds(this.duration));
-			}
-		})
+		soundManager.getSoundById('audio').options.whileplaying = function(){
+			that.setState({currentTime: this.position});
+		}
+	},
+	setPosition: function(mouseOffset, total){
+		var duration = this.props.song.duration;
+		var position = ~~duration * mouseOffset / total;
+		var audio = soundManager.getSoundById('audio');
+		audio.setPosition(position);
 	},
 	render: function(){
 		var song = this.props.song;
@@ -111,10 +113,10 @@ var VoxHeader = React.createClass({
 						<p className="artists">{song.artists.toString()}</p>
 						<p className="album">{song.album}</p>
 						<span className="title">{song.title}</span>
-						<span className="remainTime">- {VoxUtil.formatMilliseconds(song.duration - this.state.currentTime)}</span>
+						<span className="remainTime">-{VoxUtil.formatMilliseconds(song.duration - this.state.currentTime)}</span>
 					</div>
 				</div>
-				<PlayBox song={this.props.song} audio={this.audio} isPlaying={this.props.isPlaying} togglePlayingState={this.props.togglePlayingState} currentTime={this.state.currentTime}/>
+				<PlayBox currentTime={this.state.currentTime} setPosition={this.setPosition} {...this.props} />
 			</div>
 		)
 	}
@@ -123,19 +125,26 @@ var VoxHeader = React.createClass({
 var PlayBox = React.createClass({
 	toggle: function(e){
 		var $target = $(e.currentTarget);
+		var audio = soundManager.getSoundById('audio');
 		if ($target.hasClass('fa-pause')){
-			this.props.audio.pause();
+			audio.pause();
 		} else {
-			this.props.audio.play();
+			audio.play();
 		}
 		this.props.togglePlayingState();
 	},
 	componentWillReceiveProps: function(nextProps){
-		var audio = nextProps.audio;
+		var audio = soundManager.getSoundById('audio')
 		var song = nextProps.song;
 		var isPlaying = nextProps.isPlaying;
-		var audioUrl = require('../audio/'+song.name);
-		if (song.id !== this.props.song.id && isPlaying){
+		var isPlayFromBegin = nextProps.isPlayFromBegin;
+		var currentTime = nextProps.currentTime;
+		// console.log('this.props:',this.props);
+		// console.log('nextProps:',nextProps);
+		// 应对点击暂停/播放按钮和双击切歌的不同场景
+		if ((isPlaying && this.props.currentTime === currentTime && isPlayFromBegin) || currentTime === 0){
+			var audioUrl = require('../audio/'+song.name);
+			audio.stop();
 			audio.play({url: audioUrl});	
 		}
 	},
@@ -144,24 +153,21 @@ var PlayBox = React.createClass({
 		$target.toggleClass('fa-compress').toggleClass('fa-expand');
 		$('.playList').slideToggle();
 	},
-	test: function(){
-		var audioUrl = require('../audio/周杰伦 - 爱情废柴.mp3');
-		this.props.audio.play({url: audioUrl});
-	},
 	render: function(){
-		var percentage = (this.props.currentTime / this.props.audio.duration * 100).toFixed(2) + '%';
+		var audio = soundManager.getSoundById('audio');
+		var percentage = (this.props.currentTime / audio.duration * 100).toFixed(2) + '%';
 		var togglePlay = this.props.isPlaying ? 
 			<i className="togglePlay fa fa-pause" onClick={this.toggle}></i> :
 			<i className="togglePlay fa fa-play" onClick={this.toggle}></i>;
 		return (
 			<div className="playBox">
-				<ProgressBar percentage={percentage}/>
+				<ProgressBar percentage={percentage} setPosition={this.props.setPosition}/>
 				<ul>
 					<li className="toggle"><i className="fa fa-compress" onClick={this.togglePlayList}></i></li>
 					<li className="controls">
 						<i className="fa fa-backward"></i>
 						{togglePlay}
-						<i className="fa fa-forward" onClick={this.test}></i>
+						<i className="fa fa-forward"></i>
 					</li>
 					<li className="search"><i className="fa fa-search"></i></li>
 				</ul>
@@ -171,8 +177,61 @@ var PlayBox = React.createClass({
 });
 
 var ProgressBar = React.createClass({
+	shouldComponentUpdate: function(nextProps){  // 在进度条按住拖动的时候，并不改变真正的currentTime的state，音乐继续播放，但进度条得我自己掌控
+		if (this.isAdjusting){
+			return false;
+		} else {
+			return true;
+		}
+	},
 	preMoveStick: function(e){
-		var $target = $(e.currentTarget)
+		var $target = $(e.currentTarget);
+		var $stick = $target.find('.stick');
+		$stick.addClass('show');
+		this.moveStick(e);
+		this.startMoveMode();
+	},
+	startMoveMode: function(){
+		this.isAdjusting = true;
+		var $vox = $('.webVox');
+		var $fake = $('<div class="fake"></div>');
+		$fake.css({
+			width: $vox.width(),
+			height: $vox.height()
+		});
+		$vox.append($fake);
+		$fake.on('mousemove', this.moveStick);
+		$fake.on('mouseup', this.setPosition);
+	},
+	moveStick: function(e){
+		var $vox = $('.webVox');
+		var $target = $(e.currentTarget);
+		var $stick = $vox.find('.stick');
+		e = e.nativeEvent || e; // 想日狗
+		this.mouseOffset = e.layerX || e.offsetX;  
+		this.stickOffset = $stick[0].offsetLeft;
+		this.total =  $target.width();
+		console.log('mouseOffset:', this.mouseOffset, ' total:', this.total);
+		var percentage = (this.mouseOffset / this.total * 100).toFixed(2) + '%';
+		$vox.find('.played').css({width: percentage});	
+	},
+	setPosition: function(e){
+		var $target = $(e.currentTarget);
+		this.props.setPosition(this.mouseOffset, this.total);
+		this.endMoveMode();
+	},
+	endMoveMode: function(){
+		var $vox = $('.webVox');
+		var $fake = $vox.find('.fake');
+		var $progressBar = $vox.find('.progressBar');
+		var $stick = $vox.find('.stick');
+		$stick.removeClass('show');
+		$vox.remove('.fake');
+		$fake.off('mousemove');
+		$fake.off('mouseup');
+		$fake.remove();
+		// Todo: 恢复stick
+		this.isAdjusting = false;
 	},
 	showStick: function(e){
 		var $target = $(e.currentTarget);
@@ -184,10 +243,10 @@ var ProgressBar = React.createClass({
 	},
 	render: function(){
 		return (
-			<div className="progressBar" onMouseEnter={this.showStick} onMouseLeave={this.hideStick}>
+			<div className="progressBar" onMouseDown={this.preMoveStick} onMouseEnter={this.showStick} onMouseLeave={this.hideStick}>
 				<div className="total"></div>
 				<div className="played" style={{width: this.props.percentage}}>
-					<div className="stick" onMouseDown={this.preMoveStick}></div>
+					<div className="stick"></div>
 				</div>
 			</div>
 		)
@@ -261,6 +320,7 @@ var SongRow = React.createClass({
 // setup soundManager first!!
 soundManager.setup({
 	onready: function(){
+		soundManager.createSound({id: 'audio'});
 		ReactDOM.render(<WebVox data={data}/>,document.getElementById('content'));
 	}
 });

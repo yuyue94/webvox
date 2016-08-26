@@ -23,10 +23,20 @@ ul {
 }
 
 .webVox {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
 	width: 325px;
 	margin-top: 50px;
 	margin-left: 50px;	
 	position: relative;
+	.fake {
+		position: absolute;
+		left: 0;
+		top: 0;
+		background-color: transparent;
+		z-index: 10;
+	}
 	#close {
 		position: absolute;
 		font-size: 12px;
@@ -101,6 +111,9 @@ ul {
 					height: 1px;
 					top: -1px;  /* hide the total bar */
 					.stick {
+						&.show {
+							display: block !important;
+						}
 						display: none;
 						width: 2px;
 						height: 9px;
