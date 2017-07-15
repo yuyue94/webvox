@@ -70,7 +70,7 @@ var WebVox = React.createClass({
 		return (
 			<div className="webVox">
 				<div id="close"><i className="fa fa-times"></i></div>
-				<VoxHeader song={currentSong} togglePlayingState={this.togglePlayingState} {...this.state} />
+				<VoxHeader songs={this.props.data} song={currentSong} togglePlayingState={this.togglePlayingState} handleSwitchSong={this.handleSwitchSong} {...this.state} />
 				<PlayList songs={this.props.data} handleSwitchSong={this.handleSwitchSong} {...this.state} />
 			</div>
 		)
@@ -133,6 +133,19 @@ var PlayBox = React.createClass({
 		}
 		this.props.togglePlayingState();
 	},
+	backward: function(){
+		var length = this.props.songs.length;
+		var id = this.props.song.id - 1 || length;
+		this.props.handleSwitchSong(id);
+	},
+	forward: function() {
+		var length = this.props.songs.length;
+		var id = this.props.song.id + 1;
+		if (id > length) {
+			id = 1;
+		}
+		this.props.handleSwitchSong(id);
+	},
 	componentWillReceiveProps: function(nextProps){
 		var audio = soundManager.getSoundById('audio')
 		var song = nextProps.song;
@@ -165,9 +178,9 @@ var PlayBox = React.createClass({
 				<ul>
 					<li className="toggle"><i className="fa fa-compress" onClick={this.togglePlayList}></i></li>
 					<li className="controls">
-						<i className="fa fa-backward"></i>
+						<i className="fa fa-backward" onClick={this.backward}></i>
 						{togglePlay}
-						<i className="fa fa-forward"></i>
+						<i className="fa fa-forward" onClick={this.forward}></i>
 					</li>
 					<li className="search"><i className="fa fa-search"></i></li>
 				</ul>
